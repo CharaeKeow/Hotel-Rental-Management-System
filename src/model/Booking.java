@@ -2,8 +2,8 @@ package model;
 
 import java.util.Vector;
 
-public class Booking {
-	private static int bookingID; //auto increment
+public class Booking extends Model {
+	private static int BOOKING_ID; //auto increment
 	private Customer customer;
 	private Vector<Room> rooms = new Vector<>(); //one customer can book more than one room. So, vectors
 	private long start; //auto set current time
@@ -12,19 +12,21 @@ public class Booking {
 	private boolean hasBreakfast;
 	
 	public Booking(Customer customer, Vector<Room> rooms) {
-		++bookingID;
+		super(++BOOKING_ID);
 		this.customer = customer;
 		this.rooms = rooms;
 		this.start = System.currentTimeMillis(); //set start to current time
 	}
 	
 	public Booking(int bookingID) {
-		Booking.bookingID = bookingID;
+		//Booking.BOOKING_ID = bookingID;
+		super(bookingID);
 	}
 	
+	/*
 	public int getBookingID() {
-		return bookingID;
-	}
+		return ;
+	}*/
 	
 	public String getCustomer() {
 		return customer.getIcNum();
@@ -57,7 +59,7 @@ public class Booking {
 	public void setDuration(int duration) {
 		if (duration > 0) { //validate valid date
 			this.duration = duration;
-			this.total = duration;//d * room.getPrice();
+			// * room.getPrice();
 		}
 	}
 	

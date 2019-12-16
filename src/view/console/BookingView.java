@@ -12,7 +12,6 @@ import model.Customer;
 import model.Room;
 
 public class BookingView extends View {
-//	private static Vector<Booking> bookings = new Vector<>();
 
 	@Override
 	void displayOption() {
@@ -52,9 +51,16 @@ public class BookingView extends View {
 			
 			for (int i = 0; i < num; i++) {
 				System.out.println("Select a room: ");
+				
 				Room room = RoomManager.selectRoom(scanner.nextInt());
-				rooms.add(room);
-			}	
+				
+				if (room != null && room.isOccupied()) { //Check if valid roomNo is entered
+					rooms.add(room); 
+				} else { //if not, decrement the loop
+					System.out.println("Invalid choice");
+					i--;
+				}			
+			}				
 			
 			Booking booking = new Booking(customer, rooms);		
 			
@@ -100,11 +106,25 @@ public class BookingView extends View {
 					System.out.println("\nHow many rooms?");
 					int num = scanner.nextInt();
 					
+					/*
 					for (int i = 0; i < num; i++) {
 						System.out.println("Select a room: ");
 						Room room = RoomManager.selectRoom(scanner.nextInt());
 						rooms.add(room);
-					}
+					}*/
+					
+					for (int i = 0; i < num; i++) {
+						System.out.println("Select a room: ");
+						
+						Room room = RoomManager.selectRoom(scanner.nextInt());
+						
+						if (room != null) { //Check if valid roomNo is entered
+							rooms.add(room); 
+						} else { //if not, decrement the loop
+							System.out.println("Invalid choice");
+							i--;
+						}			
+					}	
 					
 					booking.setRoom(rooms);
 					
@@ -123,7 +143,13 @@ public class BookingView extends View {
 					for (int i = 0; i < num; i++) {
 						System.out.println("Enter the room no: ");
 						Room room = RoomManager.selectRoom(scanner.nextInt());
-						rooms.remove(room);
+						if (room != null) {
+							rooms.remove(room);
+						} else {
+							System.out.println("Invalid choice");
+							i--;
+						}
+						//rooms.remove(room);
 					} 
 					
 					booking.setRoom(rooms);
@@ -158,7 +184,12 @@ public class BookingView extends View {
 			scanner.nextLine();
 			System.out.println("Booking ID: ");
 			
-			BookingManager.deleteBooking(scanner.nextInt());
+			if (BookingManager.deleteBooking(scanner.nextInt())) {
+				System.out.println("Successfully delete this booking");
+			} else {
+				System.out.println("Operation unsuccessful.");
+			}
+			
 			
 		} else if (choice == 4) {
 			
