@@ -67,6 +67,7 @@ public class RoomManager {
 		System.out.println("Number: " + room.getRoomNo());
 		System.out.println("Type: " + room.getRoomType());
 		System.out.println("Price: " + room.getPrice());
+		System.out.println("Occupied: " + room.isOccupied());
 	}
 	
 	//display by max price
@@ -106,21 +107,22 @@ public class RoomManager {
 	}
 	
 	//assign specific room by passing roomNo. Return that room
+	//Used for adding and updating room only
 	public static Room selectRoom(int roomNo) {
 		Room temp = null;
 		
 		for (Room room : rooms) {
 			if (room.getRoomNo() == roomNo) {
-				
-				//flip the room.occupied to true or false
-				if (room.isOccupied()) {
-					room.setOccupied(false);
-				} else if (!room.isOccupied()) {
+				if (!room.isOccupied()) {
 					room.setOccupied(true);
+				} else { //for deleting room during update
+					room.setOccupied(false);
 				}
+				
 				
 				//update the room's isOccupied first before return the new object
 				temp = room; //temp = that room
+				break;
 			}
 		}
 		

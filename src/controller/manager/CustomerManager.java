@@ -86,7 +86,7 @@ public class CustomerManager {
 		
 		for (Customer customer : customers) {
 			if (customer != null && customer.getUniqueID() == customerID) {
-				temp = customer;
+				temp = customer;	
 			}
 		}
 		return temp;
