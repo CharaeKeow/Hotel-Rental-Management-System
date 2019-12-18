@@ -1,5 +1,6 @@
 package view.console;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 //import java.util.Vector;
 
@@ -20,7 +21,7 @@ public class CustomerView extends View {
 	}
 
 	@Override
-	void processOption(Scanner scanner, int choice) {
+	void processOption(Scanner scanner, int choice) throws ClassNotFoundException, SQLException {
 		if (choice == 1) {
 			
 			System.out.println("Add customer");

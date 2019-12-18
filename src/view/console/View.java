@@ -1,11 +1,12 @@
 package view.console;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public abstract class View {
 	abstract void displayOption();
 	
-	final int selectOption(Scanner scanner, int maximum) {
+	final int selectOption(Scanner scanner, int maximum) throws ClassNotFoundException, SQLException {
 		int choice;
 		
 		do {
@@ -25,5 +26,5 @@ public abstract class View {
 		return choice;
 	}
 
-	abstract void processOption(Scanner scanner, int choice);
+	abstract void processOption(Scanner scanner, int choice) throws ClassNotFoundException, SQLException;
 }

@@ -1,52 +1,57 @@
 package model;
 
-import java.util.Vector;
+//import java.sql.Date;
+import java.util.Date;
 
-public class Booking {
-	private static int bookingID; //auto increment
-	private Customer customer;
-	private Vector<Room> rooms = new Vector<>(); //one customer can book more than one room. So, vectors
-	private long start; //auto set current time
+public class Booking extends Model {
+	private static int BOOKING_ID; //auto increment
+	private int customerIcNo;
+	//private Vector<Room> rooms = new Vector<>(); //one customer can book more than one room. So, vectors
+	private int roomNo;
+	private Date start; //auto sedt current time
 	private int duration;
 	private double total; //calculate after end
 	private boolean hasBreakfast;
 	
-	public Booking(Customer customer, Vector<Room> rooms) {
-		++bookingID;
-		this.customer = customer;
-		this.rooms = rooms;
-		this.start = System.currentTimeMillis(); //set start to current time
+	public Booking(int customerIcNo, int roomNo) {
+		super(++BOOKING_ID);
+		this.customerIcNo = customerIcNo;
+		this.roomNo = roomNo;
+		 //set start to current time
 	}
 	
 	public Booking(int bookingID) {
-		Booking.bookingID = bookingID;
+		//Booking.BOOKING_ID = bookingID;
+		super(bookingID);
 	}
 	
+	/*
 	public int getBookingID() {
-		return bookingID;
+		return ;
+	}*/
+	
+	public int getCustomerIcNo() {
+		return customerIcNo;
 	}
 	
-	public String getCustomer() {
-		return customer.getIcNum();
+	public void setCustomerIcNo(int customerIcNo) {
+		this.customerIcNo = customerIcNo;
 	}
 	
-	public void setCustomer(Customer customer) {
-		this.customer = customer;
-	}
-	
+	/*
 	public Vector<Room> getRooms() {
-		return rooms;
+		return room;
 	}
 	
 	public void setRoom(Vector<Room> rooms) {
-		this.rooms = rooms;
-	}
+		this.room = rooms;
+	} */
 	
-	public long getStart() {
+	public Date getStart() {
 		return start;
 	}
 	
-	public void setStart(long start) {
+	public void setStart(Date start) {
 		this.start = start;
 	}
 	
@@ -57,7 +62,7 @@ public class Booking {
 	public void setDuration(int duration) {
 		if (duration > 0) { //validate valid date
 			this.duration = duration;
-			this.total = duration;//d * room.getPrice();
+			// * room.getPrice();
 		}
 	}
 	
@@ -73,5 +78,13 @@ public class Booking {
 	
 	public void setHasBreakfast(boolean hasBreakfast) {
 		this.hasBreakfast = hasBreakfast;
+	}
+
+	public int getRoomNo() {
+		return roomNo;
+	}
+
+	public void setRoom(int roomNo) {
+		this.roomNo = roomNo;
 	}
 }

@@ -1,21 +1,52 @@
 package controller.manager;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.Vector;
+
+import javax.swing.table.DefaultTableModel;
 
 import model.Room;
 
 public class RoomManager {
 	private static Vector<Room> rooms = new Vector<>();
 	
-	public static int addRoom(Room room) {
+	public static int addRoom(Room room) throws SQLException, ClassNotFoundException {
 		int status = 0;
-		int size = rooms.size();
-		rooms.add(room);
 		
-		if (rooms.size() > size) { //add succeed
-			status++; //status != 0
-		}
+		Class.forName("org.mariadb.jdbc.Driver");
+		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");
+
+		//Check if the roomNo is already exist in DB.
+		PreparedStatement ps2 = connection.prepareStatement(
+				"SELECT roomID FROM room WHERE roomNo = ?"
+				);
 		
+		ps2.setInt(1, room.getRoomNo());
+		ResultSet rs = ps2.executeQuery();
+		
+		if (rs.next()) { //roomNo already exist in DB
+			status = -1;
+		} else {
+			PreparedStatement ps = connection.prepareStatement(
+					"INSERT INTO room (roomNo, roomType, price, occupied)"
+					+ "VALUES(?, ?, ?, ?)"
+					);
+			
+			
+			ps.setInt(1, room.getRoomNo());
+			ps.setString(2, room.getRoomType());
+			ps.setDouble(3, room.getPrice());
+			ps.setBoolean(4, room.isOccupied());
+
+			status = ps.executeUpdate();
+			
+		}	
+		connection.close();
 		return status;
 	}
 	
@@ -55,10 +86,33 @@ public class RoomManager {
 	}
 	
 	//display all
-	public static void displayRooms() {
-		for (Room room : rooms) {
-			displayRoom(room);
+	public static DefaultTableModel displayRooms() throws ClassNotFoundException, SQLException {
+		Class.forName("org.mariadb.jdbc.Driver");
+		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");
+		
+		PreparedStatement ps = connection.prepareStatement(
+				"SELECT * FROM room"
+				);
+		
+		ResultSet rs = ps.executeQuery();
+		ResultSetMetaData metaData = rs.getMetaData();
+		
+		Vector<String> columnNames = new Vector<String>();
+		int columnCount = metaData.getColumnCount();
+		for (int column = 1; column <= columnCount; column++) {
+			columnNames.add(metaData.getColumnName(column));
 		}
+		
+		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+		while (rs.next()) {
+			Vector<Object> vector = new Vector<Object>();
+			for(int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+				vector.add(rs.getObject(columnIndex));
+			}
+			data.add(vector);
+		}
+		
+		return new DefaultTableModel(data, columnNames);
 	}
 		
 	//display individual room. Invoked in displayRooms()
@@ -67,6 +121,7 @@ public class RoomManager {
 		System.out.println("Number: " + room.getRoomNo());
 		System.out.println("Type: " + room.getRoomType());
 		System.out.println("Price: " + room.getPrice());
+		System.out.println("Occupied: " + room.isOccupied());
 	}
 	
 	//display by max price
@@ -106,21 +161,22 @@ public class RoomManager {
 	}
 	
 	//assign specific room by passing roomNo. Return that room
+	//Used for adding and updating room only
 	public static Room selectRoom(int roomNo) {
 		Room temp = null;
 		
 		for (Room room : rooms) {
 			if (room.getRoomNo() == roomNo) {
-				
-				//flip the room.occupied to true or false
-				if (room.isOccupied()) {
-					room.setOccupied(false);
-				} else if (!room.isOccupied()) {
+				if (!room.isOccupied()) {
 					room.setOccupied(true);
+				} else { //for deleting room during update
+					room.setOccupied(false);
 				}
+				
 				
 				//update the room's isOccupied first before return the new object
 				temp = room; //temp = that room
+				break;
 			}
 		}
 		

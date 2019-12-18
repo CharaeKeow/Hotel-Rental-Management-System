@@ -1,5 +1,6 @@
 package view.console;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -22,7 +23,7 @@ public class RoomView extends View{
 	}
 
 	@Override
-	void processOption(Scanner scanner, int choice) {
+	void processOption(Scanner scanner, int choice) throws ClassNotFoundException, SQLException {
 		if (choice == 1) {
 			
 			System.out.println("Add room");
@@ -42,10 +43,15 @@ public class RoomView extends View{
 			System.out.println("Price: ");
 			room.setPrice(scanner.nextDouble());
 			
-			if (RoomManager.addRoom(room) != 0) {
-				System.out.println("Successfully added a new room");
-			} else {
-				System.out.println("Unseccessful operation :(");
+			try {
+				if (RoomManager.addRoom(room) != 0) {
+					System.out.println("Successfully added a new room");
+				} else {
+					System.out.println("Unseccessful operation :(");
+				}
+			} catch (ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			
 		} else if (choice == 2) {

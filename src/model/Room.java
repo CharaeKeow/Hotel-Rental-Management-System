@@ -4,7 +4,7 @@ public class Room extends Model {
 	private static int LATEST_ID;
 	private int roomNo;
 	private String roomType;
-    //private int capacity; //do we need this?
+    //private int capacity; //do we need this
 	private double price;
 	private boolean occupied; //whether the room is free or not
 	
