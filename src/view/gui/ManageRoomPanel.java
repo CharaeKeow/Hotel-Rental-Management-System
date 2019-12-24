@@ -1,5 +1,6 @@
 package view.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -13,11 +14,14 @@ public class ManageRoomPanel implements ActionListener
 {	
 	private JButton btnAddRoom = new JButton("Add Room");
 	private JButton btnViewRoom = new JButton("View Room");
+	private JButton btnEditRoom = new JButton("Edit Room");
+	private JButton btnDeleteRoom = new JButton("Delete Room");
 	
 	private JPanel holderPnl = new JPanel(new GridLayout(1, 1, 20, 20));
-	private JPanel btnPnl = new JPanel(new GridLayout(2, 1, 20, 20));
+	private JPanel btnPnl = new JPanel(new GridLayout(4, 1, 20, 20));
 	private JPanel addRoomPnl = new JPanel(new GridLayout(4, 2, 20, 20));
-	private JPanel ViewRoomnPnl = new JPanel(new GridLayout(2, 1, 20, 20));
+	//private JPanel ViewRoomnPnl = new JPanel(new GridLayout(3, 1, 20, 20));
+	private JPanel ViewRoomnPnl = new JPanel(new BorderLayout());
 	
 	public ManageRoomPanel(JPanel pnlManageRoom)
 	{
@@ -25,12 +29,18 @@ public class ManageRoomPanel implements ActionListener
 		
 		btnPnl.add(btnAddRoom);
 		btnPnl.add(btnViewRoom);
+		btnPnl.add(btnEditRoom);
+		btnPnl.add(btnDeleteRoom);
 		
 		btnAddRoom.setFont(btnFont);
 		btnViewRoom.setFont(btnFont);
+		btnEditRoom.setFont(btnFont);
+		btnDeleteRoom.setFont(btnFont);
 		
 		btnAddRoom.addActionListener(this);
 		btnViewRoom.addActionListener(this);
+		btnEditRoom.addActionListener(this);
+		btnDeleteRoom.addActionListener(this);
 		
 		holderPnl.add(btnPnl);
 		
@@ -46,7 +56,7 @@ public class ManageRoomPanel implements ActionListener
 		{			
 			holderPnl.removeAll();
 			addRoomPnl.removeAll();
-			new addRoomPanel(addRoomPnl);
+			new AddRoomPanel(addRoomPnl);
 			holderPnl.add(addRoomPnl);
 			holderPnl.updateUI();
 		} 
@@ -56,12 +66,26 @@ public class ManageRoomPanel implements ActionListener
 			{
 				holderPnl.removeAll();
 				ViewRoomnPnl.removeAll();
-				new viewRoomPanel(ViewRoomnPnl);
+				new ViewRoomPanel(ViewRoomnPnl);
 				holderPnl.add(ViewRoomnPnl);
 				holderPnl.updateUI();
 			} 
 			catch (ClassNotFoundException | SQLException e1) 
 			{
+				e1.printStackTrace();
+			}
+		} else if (source == btnEditRoom) {
+			try {
+				new EditRoomDialog(null);
+			} catch (ClassNotFoundException | SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		} else if (source == btnDeleteRoom) {
+			try {
+				new DeleteRoomDialog(null);
+			} catch (ClassNotFoundException | SQLException e1) {
+				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		}

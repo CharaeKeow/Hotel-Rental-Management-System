@@ -13,9 +13,10 @@ import javax.swing.table.DefaultTableModel;
 import model.Customer;
 
 public class CustomerManager {
-	private static Vector<Customer> customers = new Vector<>();
+	//private static Vector<Customer> customers = new Vector<>();
 	
 	public static int addCustomer(Customer customer) throws SQLException, ClassNotFoundException {
+		
 		Class.forName("org.mariadb.jdbc.Driver");
 		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");
 		
@@ -60,75 +61,62 @@ public class CustomerManager {
 				vector.add(rs.getObject(columnIndex));
 			}
 			data.add(vector);
-		}
-		
+		}		
 		return new DefaultTableModel(data, columnNames);		
 	}
 	
-	public static void displayCustomer(Customer customer) {
-		System.out.println("\nCustomer ID: " + customer.getUniqueID());
-		System.out.println("Name: " + customer.getName());
-		System.out.println("Email: " + customer.getEmail());
-		System.out.println("Phone number: " + customer.getPhoneNo());
-		System.out.println("IC Number: " + customer.getIcNum());
+	public static int updateCustomer(Customer customer) throws ClassNotFoundException, SQLException {
+		Class.forName("org.mariadb.jdbc.Driver");
+		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");
+		
+		PreparedStatement ps = connection.prepareStatement(
+				"UPDATE customer"
+				+ " SET name = ?, email = ?, phoneNo = ? "
+				+ " WHERE icNum = ? "
+				);
+		
+		ps.setString(1, customer.getName());
+		ps.setString(2, customer.getEmail());
+		ps.setString(3, customer.getPhoneNo());
+		ps.setString(4, customer.getIcNum());
+		
+		int status = ps.executeUpdate();
+		
+		return status;
 	}
 	
-	public static boolean updateCustomer(Customer customer) {
-		int index = -1;
-		boolean success = false;
+	public static int deleteCustomer(String customerIC) throws SQLException, ClassNotFoundException {
+		Class.forName("org.mariadb.jdbc.Driver");
+		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");
 		
-		for (int i = 0; i < customers.size(); i++) {
-			Customer temp = customers.get(i); //return customer at this index
-			
-			if (temp != null && temp.getUniqueID() == customer.getUniqueID()) {
-				index = i;
-				break;
-			}
-		}
+		PreparedStatement ps = connection.prepareStatement(
+				"DELETE FROM customer"
+				+ " WHERE icNum = ? "
+				);
 		
-		if (index < customers.size()) { //valid index
-			customers.set(index, customer); //update the customer object at the specified index
-			success = true;
-		}
+		ps.setString(1, customerIC);
 		
-		return success;
+		int status = ps.executeUpdate();
+		
+		return status;
 	}
 	
-	public static boolean deleteCustomer(int customerID) {
-		Customer customer = null;
+	//Return vector of all Ic numbers
+	public static Vector<String> customerList() throws ClassNotFoundException, SQLException {
+		Vector<String> customers = new Vector<>();
 		
-		for (Customer c : customers) {
-			if (c.getUniqueID() == customerID) {
-				customer = c; //set customer = null
-				break;
-			}
-		}
-		return customers.remove(customer); //remove that customer in vector
-	}
-	
-	//select specific customer in the customer list
-	//select by icNum
-	public static Customer selectCustomer(String icNum) {
-		Customer temp = null;
+		Class.forName("org.mariadb.jdbc.Driver");
+		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");		
 		
-		for (Customer customer : customers) {
-			if (customer != null && customer.getIcNum().equalsIgnoreCase(icNum)) {
-				temp = customer;
-			}
+		PreparedStatement ps = connection.prepareStatement(
+				"SELECT icNum FROM customer"
+				);
+		
+		ResultSet rs = ps.executeQuery();
+		while(rs.next( )) {
+			customers.add(rs.getString(1));
 		}
 		
-		return temp;
-	}
-	
-	//select by id
-	public static Customer selectCustomer(int customerID) {
-		Customer temp = null;
-		
-		for (Customer customer : customers) {
-			if (customer != null && customer.getUniqueID() == customerID) {
-				temp = customer;	
-			}
-		}
-		return temp;
+		return customers;		
 	}
 }

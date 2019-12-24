@@ -30,20 +30,24 @@ public class MainFrame extends JFrame implements ActionListener
 	@SuppressWarnings("unused")
 	private int flag = 0;
 	
-	private JPanel pnlLeft = new JPanel(new GridLayout(3, 1, 20, 20));
+	private JPanel pnlLeft = new JPanel(new GridLayout(5, 1, 20, 20));
 	private JPanel pnlRight = new JPanel(new GridLayout(1, 1, 20, 20));
-	private JPanel pnlAddBooking = new JPanel(new GridLayout(5, 1, 20, 20));
+	private JPanel pnlAddCustomer = new JPanel(new GridLayout(10, 1, 20, 20));
+	private JPanel pnlAddBooking = new JPanel(new GridLayout(8, 1, 20, 20));
 	private JPanel pnlManageRoom = new JPanel(new GridLayout(1, 1, 20, 20));
-	private JPanel pnlViewBooking = new JPanel(new GridLayout(1, 1));
+	private JPanel pnlViewBooking = new JPanel(new BorderLayout());
+	private JPanel pnlViewCustomer = new JPanel(new BorderLayout());
 	
 	private JTextField txtStaffID = new JTextField();
 	private JPasswordField txtPassword = new JPasswordField("");
 	
 	private JButton btnSubmit = new JButton("Submit");
 	private JButton btnReset = new JButton("Reset");
+	private JButton btnAddCustomer = new JButton("ADD CUSTOMER");
 	private JButton btnAddBooking = new JButton("ADD BOOKING");
 	private JButton btnManageRoom = new JButton("MANAGE ROOM");
 	private JButton btnViewBooking = new JButton("VIEW BOOKING");
+	private JButton btnViewCustomer = new JButton("VIEW CUSTOMER");
 	
 	public MainFrame()
 	{
@@ -64,10 +68,13 @@ public class MainFrame extends JFrame implements ActionListener
 		
 		btnSubmit.setFont(btnFont);
 		btnReset.setFont(btnFont);
+		btnAddCustomer.setFont(btnFont);
 		btnAddBooking.setFont(btnFont);
 		btnManageRoom.setFont(btnFont);
 		btnViewBooking.setFont(btnFont);
+		btnViewCustomer.setFont(btnFont);
 		
+		pnlAddCustomer.setPreferredSize(new Dimension(1500, 1500)); //
 		pnlAddBooking.setPreferredSize(new Dimension(1500, 1500));
 		pnlManageRoom.setPreferredSize(new Dimension(1500, 1500));
 		pnlViewBooking.setPreferredSize(new Dimension(1500, 1500));
@@ -78,27 +85,33 @@ public class MainFrame extends JFrame implements ActionListener
 		JLabel staffIDLabel = new JLabel("Staff ID: ", JLabel.CENTER);
 		staffIDLabel.setFont(new Font("Verdana", Font.PLAIN, 30));
 		txtStaffID.setFont(new Font("Verdana", Font.PLAIN, 30));
+		txtStaffID.setHorizontalAlignment(JLabel.CENTER);
 		pnlLogin.add(staffIDLabel);
 		pnlLogin.add(txtStaffID);
 		
 		JLabel passwordLabel = new JLabel("Password: ", JLabel.CENTER);
 		passwordLabel.setFont(new Font("Verdana", Font.PLAIN, 30));
 		txtPassword.setFont(new Font("Verdana", Font.PLAIN, 30));
+		txtPassword.setHorizontalAlignment(JLabel.CENTER);
 		pnlLogin.add(passwordLabel);
 		pnlLogin.add(txtPassword);
 		
 		pnlLogin.add(pnlBtn);
 		
 		pnlRight.add(pnlLogin);
+		pnlLeft.add(btnAddCustomer); //
 		pnlLeft.add(btnAddBooking);
-		pnlLeft.add(btnManageRoom);
 		pnlLeft.add(btnViewBooking);
+		pnlLeft.add(btnManageRoom);
+		pnlLeft.add(btnViewCustomer);
 		
 		btnSubmit.addActionListener(this);
 		btnReset.addActionListener(this);
+		btnAddCustomer.addActionListener(this); //
 		btnAddBooking.addActionListener(this);
 		btnManageRoom.addActionListener(this);
 		btnViewBooking.addActionListener(this);
+		btnViewCustomer.addActionListener(this);
 		
 		this.add(HRMSlabel, BorderLayout.NORTH);
 		this.add(pnlLeft, BorderLayout.WEST);
@@ -161,7 +174,6 @@ public class MainFrame extends JFrame implements ActionListener
 						if (StaffManager.loginStaff(staffID, password) == true) 
 						{
 							JOptionPane.showMessageDialog(this, "Login successful ^_^", "Successful", JOptionPane.INFORMATION_MESSAGE);
-							
 						} 
 						else 
 						{
@@ -203,13 +215,24 @@ public class MainFrame extends JFrame implements ActionListener
 		{
 			txtStaffID.setText("");
 			txtPassword.setText("");
+		} else if (source == btnAddCustomer) {
+			pnlRight.removeAll();
+			pnlAddCustomer.removeAll();
+			new AddCustomerPanel(pnlAddCustomer);
+			pnlRight.add(pnlAddCustomer);
+			pnlRight.updateUI();
 		}
 		
 		else if(source == btnAddBooking/* && flag == 1*/)
 		{
 			pnlRight.removeAll();
 			pnlAddBooking.removeAll();
-			new AddBookingPanel(pnlAddBooking);
+			try {
+				new AddBookingPanel(pnlAddBooking);
+			} catch (ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			pnlRight.add(pnlAddBooking);
 			pnlRight.updateUI();
 		}
@@ -232,6 +255,20 @@ public class MainFrame extends JFrame implements ActionListener
 				e.printStackTrace();
 			}
 			pnlRight.add(pnlViewBooking);
+			pnlRight.updateUI();
+		}
+		else if(source == btnViewCustomer/* && flag == 1*/)
+		{
+			pnlRight.removeAll();
+			pnlViewCustomer.removeAll();
+			try {
+				//new ViewCustomerPanel(pnlViewCustomer);
+				new ViewCustomerPanel(pnlViewCustomer);
+			} catch (ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			pnlRight.add(pnlViewCustomer);
 			pnlRight.updateUI();
 		}
 		else

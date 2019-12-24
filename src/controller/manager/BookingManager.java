@@ -6,97 +6,97 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.Vector;
 
 import javax.swing.table.DefaultTableModel;
 
 import model.Booking;
-import model.Room;
 
 public class BookingManager {
-	private static Vector<Booking> bookings = new Vector<>();
 	
 	public static int addBooking(Booking booking) throws SQLException, ClassNotFoundException {
 		Class.forName("org.mariadb.jdbc.Driver");
 		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");
 		
 		PreparedStatement ps = connection.prepareStatement(
-				"INSERT INTO booking (roomID, customerID, duration, total, hasBreakfast,start)"
+				"INSERT INTO booking (roomNo, icNum, duration, total, hasBreakfast,start)"
 				+ "VALUES (?, ?, ?, ?, ?, ?)"
 				);
-		
-		/*
-		ps.setInt(1, booking.getRoom().getUniqueID());
-		ps.setInt(2, booking.getCustomer());*/
-		ps.setInt(1, 1);
-		ps.setInt(2, 1);
+			
+		ps.setInt(1, booking.getRoomNo()); 
+		ps.setString(2, booking.getCustomerIcNo()); 
 		ps.setInt(3, booking.getDuration());
 		ps.setDouble(4, BookingManager.calculateTotal(booking));
 		ps.setBoolean(5, booking.isHasBreakfast());
-		//ps.setTimestamp(6, displayStart(booking));
+		java.util.Date utilStartDate = booking.getStart();
+		java.sql.Date sqlStartDate = new java.sql.Date(utilStartDate.getTime());
+		ps.setDate(6, sqlStartDate);
+		
+		int status = ps.executeUpdate();
+		
+		if (status > 0) { //succeed
+			
+		}
+		
+		return status;
+	}
+	
+	public static int updateBooking(Booking booking, int bookingID) throws ClassNotFoundException, SQLException {
+		Class.forName("org.mariadb.jdbc.Driver");
+		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");
+		
+		PreparedStatement ps = connection.prepareStatement(
+				"UPDATE booking"
+				+ " SET icNum = ?, roomNo = ?, start = ?, duration = ?, total = ?, hasBreakfast = ? "
+				+ " WHERE bookingID = ? "
+				);
+		
+		ps.setString(1, booking.getCustomerIcNo());
+		ps.setInt(2, booking.getRoomNo());
+		java.util.Date utilStartDate = booking.getStart();
+		java.sql.Date sqlStartDate = new java.sql.Date(utilStartDate.getTime());
+		ps.setDate(3, sqlStartDate);
+		ps.setInt(4, booking.getDuration());
+		ps.setDouble(5, BookingManager.calculateTotal(booking));
+		ps.setBoolean(6, booking.isHasBreakfast());
+		ps.setInt(7, bookingID);
 		
 		int status = ps.executeUpdate();
 		
 		return status;
 	}
 	
-	public static boolean updateBooking(Booking booking) {
-		int index = -1;
-		boolean success = false;		
+	public static int deleteBooking(String bookingID) throws ClassNotFoundException, SQLException {
+		Class.forName("org.mariadb.jdbc.Driver");
+		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");
 		
-		for (int i = 0; i < bookings.size(); i++) {
-			Booking temp = bookings.get(i);
-			
-			if (temp != null && temp.getUniqueID() == booking.getUniqueID()) {
-				index = i;
-				break;
-			}
-		}
+		PreparedStatement getRoomNoStatement = connection.prepareStatement(
+					"SELECT roomNo FROM booking"
+					+ " WHERE bookingID = ?"
+				);
 		
-		if (index < bookings.size()) {
-			bookings.set(index, booking);
-			success = true;
-		}
+		getRoomNoStatement.setInt(1, Integer.parseInt(bookingID));
 		
-		return success;	
-	}
-	
-	public static boolean deleteBooking(int bookingID) {
-		Booking booking = null;
+		ResultSet rs = getRoomNoStatement.executeQuery();
+		rs.next();
+		int roomNo = rs.getInt(1);
 		
-		for (Booking b : bookings) {
-			if (b.getUniqueID() == bookingID) {
-				booking = b;
-				break;
-			}
-		}
+		PreparedStatement deleteStatement = connection.prepareStatement(
+				"DELETE FROM booking"
+				+ " WHERE bookingID = ? "
+				);
 		
-		//Room room = booking.getRoom();
+		deleteStatement.setInt(1, Integer.parseInt(bookingID));
 		
-		//Booking done, so set all the rooms for this booking
-		//to occupied == false
+		int status = deleteStatement.executeUpdate();
 		
-		//room.setOccupied(false);
+		RoomManager.updateOccupied(false, roomNo);
 		
-		
-		return bookings.remove(booking);
+		return status;
 	}
 	
 	//Return booking object to be updated
-	public static Booking getBooking(int bookingID) {
-		Booking temp = null;
-		
-		for (int i = 0; i < bookings.size(); i++) {
-			temp = bookings.get(i);
-			
-			if (temp != null && temp.getUniqueID() == bookingID) {
-				break;
-			}
-		}
-		
-		return temp;
-	}
+	
 	
 	public static DefaultTableModel displayBookings() throws ClassNotFoundException, SQLException {
 		Class.forName("org.mariadb.jdbc.Driver");
@@ -112,102 +112,52 @@ public class BookingManager {
 		Vector<String> columnNames = new Vector<String>();
 		int columnCount = metaData.getColumnCount();
 		for (int column = 1; column <= columnCount; column++) {
-			if (column == 2) { //RoomNo
-				columnNames.add("Room No");
-			} else if (column == 3) { //BookingNo
-				columnNames.add("Customer IC");
-			} else {
-				columnNames.add(metaData.getColumnName(column));
-			}
+			columnNames.add(metaData.getColumnName(column));			
 		}
 		
 		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
 		while (rs.next()) {
 			Vector<Object> vector = new Vector<Object>();
 			for(int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-				if (columnIndex == 2) {
-					PreparedStatement roomNoStatement = connection.prepareStatement(
-							"SELECT roomNo FROM room WHERE roomID = ?"
-							);
-					roomNoStatement.setInt(1, rs.getInt(2));
-					System.out.println(rs.getInt(2));
-					
-					ResultSet roomNo = roomNoStatement.executeQuery();
-					roomNo.first();
-					System.out.println(roomNo.getInt(1));
-					
-					vector.add(roomNo.getInt(1));
-					
-				} else if (columnIndex == 3) {
-					PreparedStatement roomNoStatement = connection.prepareStatement(
-							"SELECT icNum FROM customer WHERE customerID = ?"
-							);
-					roomNoStatement.setInt(1, rs.getInt(3));
-					//System.out.println(rs.getInt(3));
-					
-					ResultSet icNum = roomNoStatement.executeQuery();
-					icNum.first();
-					System.out.println(icNum.getInt(1));
-					
-					vector.add(icNum.getInt(1));
-				} else {
-					vector.add(rs.getObject(columnIndex));
-				}
+				vector.add(rs.getObject(columnIndex));				
 			}
 			data.add(vector);
 		}
 		return new DefaultTableModel(data, columnNames);
 	}
-	
-	//display the rooms booked by that particular customer
-	public static void displayBookedRooms(Booking booking) {
-		//Room room = booking.getRoom();
+
+	public static double calculateTotal(Booking booking) throws ClassNotFoundException, SQLException {
+		double total = 0;		
 		
+		double price = RoomManager.getRoomPrice(booking.getRoomNo());
+		int duration = booking.getDuration();
+		boolean hasBreakfast = booking.isHasBreakfast();
 		
-		//System.out.print(" " + room.getRoomNo());
+		total = price * duration;
 		
-		
-	}
-	
-	public static void displayBooking(Booking booking) {
-		System.out.println("\nBooking ID: " + booking.getUniqueID());
-		//System.out.println("Customer's IC: " + booking.getCustomer());
-		System.out.print("Rooms: ");
-		displayBookedRooms(booking);
-		System.out.println();
-		//System.out.println("\nStart date: " + booking.getStart());
-		//displayStart(booking); // display start time of that booking
-		System.out.println("Duration: " + booking.getDuration());
-		System.out.println("Total: RM" + calculateTotal(booking));
-		System.out.println("Breakfast included: " + booking.isHasBreakfast());
-	}
-	/*
-	public static Timestamp displayStart(Booking booking) {
-		//Timestamp ts = new Timestamp(booking.getStart());
-		
-		//Actually I think this could be obtained directly from DB
-		
-		System.out.print("Booking time: ");
-		System.out.print(ts.toLocalDateTime().getDayOfWeek());
-		System.out.print(" ");
-		System.out.print(ts.toLocalDateTime().toLocalDate());
-		System.out.println("");
-		return ts;
-	}*/
-	
-	//End booking
-	public static double calculateTotal(Booking booking) {
-		int roomNo = booking.getRoomNo();
-		double price = 0;
-		
-		
-		//price += room.getPrice();
-		
-		
-		if (booking.isHasBreakfast()) { //breakfast is RM 10
-			price += 10;
+		if (hasBreakfast) {
+			total += 10;
 		}
 		
-		return price * booking.getDuration();
+		return total;
 	}
+	
+	public static Vector<String> bookingList() throws ClassNotFoundException, SQLException {
+		Vector<String> bookings = new Vector<>();
+		
+		Class.forName("org.mariadb.jdbc.Driver");
+		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");		
+		
+		PreparedStatement ps = connection.prepareStatement(
+				"SELECT bookingID FROM booking"
+				);
+		
+		ResultSet rs = ps.executeQuery();
+		
+		while(rs.next( )) {
+			bookings.add(rs.getString(1));
+		}
+		
+		return bookings;		
+	} 
 }

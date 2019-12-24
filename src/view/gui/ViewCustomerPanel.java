@@ -1,4 +1,5 @@
 package view.gui;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -20,25 +21,26 @@ import javax.swing.RowFilter;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
-import controller.manager.BookingManager;
+import controller.manager.CustomerManager;
 
-public class ViewBookingPanel extends JPanel implements ActionListener
+public class ViewCustomerPanel extends JPanel implements ActionListener
 {
 	private static final long serialVersionUID = 1L;
 	
-	private TableModel model = BookingManager.displayBookings();
-	JTable table = new JTable(model);
-	private TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(model);
+	//JTable containing all customer
+	private TableModel model = CustomerManager.displayCustomers(); 
+	private JTable table = new JTable(model);
+	private TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(model);	
 	private JScrollPane jsp = new JScrollPane(table);
-	
+		
 	private JTextField txtFilter = new JTextField();
 	private JButton btnFilter = new JButton("Filter");
 	private JButton btnEdit = new JButton("Edit");
 	private JButton btnDelete = new JButton("Delete");
 	private JButton btnClearFilter = new JButton("Clear Filter");
-	
-	public ViewBookingPanel(JPanel pnlViewBooking) throws ClassNotFoundException, SQLException
-	{	
+			
+	public ViewCustomerPanel(JPanel pnlViewCustomer) throws ClassNotFoundException, SQLException
+	{		
 		table.setRowSorter(sorter);
 		
 		JPanel pnlNorth = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
@@ -68,11 +70,11 @@ public class ViewBookingPanel extends JPanel implements ActionListener
 		btnEdit.addActionListener(this);
 		btnDelete.addActionListener(this);
 				
-		pnlViewBooking.add(pnlNorth, BorderLayout.NORTH);
-		pnlViewBooking.add(pnlCenter, BorderLayout.CENTER);
-		pnlViewBooking.add(pnlSouth, BorderLayout.SOUTH);		
+		pnlViewCustomer.add(pnlNorth, BorderLayout.NORTH);
+		pnlViewCustomer.add(pnlCenter, BorderLayout.CENTER);
+		pnlViewCustomer.add(pnlSouth, BorderLayout.SOUTH);		
 		
-		pnlViewBooking.setVisible(true);
+		pnlViewCustomer.setVisible(true);
 		pnlNorth.setVisible(true);
 		pnlCenter.setVisible(true);
 		pnlSouth.setVisible(true);		
@@ -83,20 +85,17 @@ public class ViewBookingPanel extends JPanel implements ActionListener
 		Object source = e.getSource();
 		
 		if(source == btnEdit) {
-			
 			try {
-				new EditBookingDialog(null);
+				new EditCustomerDialog(null);
 			} catch (ClassNotFoundException | SQLException e1) {
 				e1.printStackTrace();
 			}
-			
 		} else if (source == btnDelete) {
-		
 			try {
-				new DeleteBookingDialog(null);
+				new DeleteCustomerDialog(null);
 			} catch (ClassNotFoundException | SQLException e1) {
 				e1.printStackTrace();
-			}			
+			}
 		} else if (source == btnFilter) {
 			String input = txtFilter.getText().trim();
 			if (input.length() != 0) {

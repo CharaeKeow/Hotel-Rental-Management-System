@@ -21,68 +21,58 @@ public class RoomManager {
 		Class.forName("org.mariadb.jdbc.Driver");
 		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");
 
-		//Check if the roomNo is already exist in DB.
-		PreparedStatement ps2 = connection.prepareStatement(
-				"SELECT roomID FROM room WHERE roomNo = ?"
+		PreparedStatement ps = connection.prepareStatement(
+				"INSERT INTO room (roomNo, roomType, price, occupied)"
+				+ "VALUES(?, ?, ?, ?)"
 				);
-		
-		ps2.setInt(1, room.getRoomNo());
-		ResultSet rs = ps2.executeQuery();
-		
-		if (rs.next()) { //roomNo already exist in DB
-			status = -1;
-		} else {
-			PreparedStatement ps = connection.prepareStatement(
-					"INSERT INTO room (roomNo, roomType, price, occupied)"
-					+ "VALUES(?, ?, ?, ?)"
-					);
 			
 			
-			ps.setInt(1, room.getRoomNo());
-			ps.setString(2, room.getRoomType());
-			ps.setDouble(3, room.getPrice());
-			ps.setBoolean(4, room.isOccupied());
+		ps.setInt(1, room.getRoomNo());
+		ps.setString(2, room.getRoomType());
+		ps.setDouble(3, room.getPrice());
+		ps.setBoolean(4, room.isOccupied());
 
-			status = ps.executeUpdate();
+		status = ps.executeUpdate();
 			
-		}	
 		connection.close();
 		return status;
 	}
 	
 	//update	
-	public static boolean updateRoom(Room room) {
-		int index = -1;
-		boolean success = false;
+	public static int updateRoom(Room room) throws ClassNotFoundException, SQLException {
+		Class.forName("org.mariadb.jdbc.Driver");
+		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");
 		
-		for (int i = 0; i < rooms.size(); i++) {
-			Room temp = rooms.get(i); //return customer at this index
-			
-			if (temp != null && temp.getUniqueID() == room.getUniqueID()) {
-				index = i;
-				break;
-			}
-		}
+		PreparedStatement ps = connection.prepareStatement(
+				"UPDATE room"
+				+ " SET roomType = ?, price = ?"
+				+ " WHERE roomNo = ? "
+				);
 		
-		if (index < rooms.size()) {
-			rooms.set(index, room);
-			success = true;
-		}
+		ps.setString(1, room.getRoomType());
+		ps.setDouble(2, room.getPrice());
+		ps.setInt(3, room.getRoomNo());
 		
-		return success;
+		int status = ps.executeUpdate();
+		
+		return status;
 	}
 	
 	//delete	
-	public static boolean deleteRoom(int roomID) {
-		Room room = null; //empty room
+	public static int deleteRoom(int roomNo) throws ClassNotFoundException, SQLException {
+		Class.forName("org.mariadb.jdbc.Driver");
+		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");
 		
-		for (Room r : rooms) {
-			if (r.getUniqueID() == roomID) {
-				room = r; //set room = that room
-				break;
-			}
-		}
-		return rooms.remove(room); //remove that customer in vector
+		PreparedStatement ps = connection.prepareStatement(
+				"DELETE FROM room"
+				+ " WHERE roomNo = ? "
+				);
+		
+		ps.setInt(1, roomNo);
+		
+		int status = ps.executeUpdate();
+		
+		return status;
 	}
 	
 	//display all
@@ -149,37 +139,78 @@ public class RoomManager {
 		return temp;
 	}
 	
-	//get rooms that are not occupied
-	public static void getAvailableRooms() {
+	/* This function show the room in vector, which will be passed to several JComboBox at view.gui
+	 * The argument decide whether to query the DB for unoccupied rooms only (occupied = false)
+	 * or all the available room.
+	 */
+	public static Vector<String> roomList(boolean unOccupiedOnly) throws ClassNotFoundException, SQLException {
+		Vector<String> rooms = new Vector<>();
 		
-		for (Room room : rooms) {
-			if (!room.isOccupied()) {
-				displayRoom(room);	
-			}
+		Class.forName("org.mariadb.jdbc.Driver");
+		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");		
+
+		PreparedStatement ps;
+		
+		if (unOccupiedOnly) {
+			ps = connection.prepareStatement(
+					"SELECT roomNo FROM room "
+					+ "WHERE occupied = false"
+					);
+		} else {
+			ps = connection.prepareStatement(
+					"SELECT roomNo FROM room"
+					);
 		}
-		
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) { //while there is next row
+				rooms.add(rs.getString(1));			
+		}				
+		return rooms;		
 	}
 	
-	//assign specific room by passing roomNo. Return that room
-	//Used for adding and updating room only
-	public static Room selectRoom(int roomNo) {
-		Room temp = null;
+	/*This function will change the occupied attribute of room to either true or false
+	 * The argument isOccupied is used to determine the occupied property
+	 * */
+	public static void updateOccupied(boolean isOccupied, int roomNo) throws ClassNotFoundException, SQLException {
+		Class.forName("org.mariadb.jdbc.Driver");
+		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");		
 		
-		for (Room room : rooms) {
-			if (room.getRoomNo() == roomNo) {
-				if (!room.isOccupied()) {
-					room.setOccupied(true);
-				} else { //for deleting room during update
-					room.setOccupied(false);
-				}
-				
-				
-				//update the room's isOccupied first before return the new object
-				temp = room; //temp = that room
-				break;
-			}
+		PreparedStatement ps;
+		
+		if (isOccupied) { //occupied = true
+			ps = connection.prepareStatement(
+					"UPDATE room SET occupied=true"
+					+ " WHERE roomNo = ?"
+					);
+		
+			ps.setInt(1, roomNo);
+		} else { //occupied = false
+			ps = connection.prepareStatement(
+					"UPDATE room SET occupied = false"
+					+ " WHERE roomNo = ?"
+					);
+		
+			ps.setInt(1, roomNo);
+		}			
+		
+		if (ps != null) {
+			ps.executeUpdate();
 		}
+	}
+	
+	public static double getRoomPrice(int roomNo) throws ClassNotFoundException, SQLException {
+		Class.forName("org.mariadb.jdbc.Driver");
+		Connection connection = DriverManager.getConnection("jdbc:mariadb://localhost:3306/db_hrms", "root", "HTC1x2012");		
 		
-		return temp; //return that room
+		PreparedStatement ps = connection.prepareStatement("SELECT price FROM room "
+										     			 + " WHERE roomNo = ?");
+		
+		ps.setInt(1, roomNo);
+		
+		ResultSet rs = ps.executeQuery();
+		rs.next();
+		double price = rs.getDouble(1);		
+		
+		return price;		
 	}
 }

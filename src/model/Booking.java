@@ -5,7 +5,7 @@ import java.util.Date;
 
 public class Booking extends Model {
 	private static int BOOKING_ID; //auto increment
-	private int customerIcNo;
+	private String customerIcNo;
 	//private Vector<Room> rooms = new Vector<>(); //one customer can book more than one room. So, vectors
 	private int roomNo;
 	private Date start; //auto sedt current time
@@ -13,9 +13,9 @@ public class Booking extends Model {
 	private double total; //calculate after end
 	private boolean hasBreakfast;
 	
-	public Booking(int customerIcNo, int roomNo) {
+	public Booking(String icNum, int roomNo) {
 		super(++BOOKING_ID);
-		this.customerIcNo = customerIcNo;
+		this.customerIcNo = icNum;
 		this.roomNo = roomNo;
 		 //set start to current time
 	}
@@ -30,11 +30,11 @@ public class Booking extends Model {
 		return ;
 	}*/
 	
-	public int getCustomerIcNo() {
+	public String getCustomerIcNo() {
 		return customerIcNo;
 	}
 	
-	public void setCustomerIcNo(int customerIcNo) {
+	public void setCustomerIcNo(String customerIcNo) {
 		this.customerIcNo = customerIcNo;
 	}
 	
@@ -86,5 +86,9 @@ public class Booking extends Model {
 
 	public void setRoom(int roomNo) {
 		this.roomNo = roomNo;
+	}
+
+	public void setTotal(double total) {
+		this.total = total;		
 	}
 }
